@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const router = require('express').Router();
 const { body } = require('express-validator');
 const userController = require('../controllers/user.controller');
-const authMiddleware = require('../middlewares/auth.middleware');
+const { authUser } = require('../middlewares/auth.middleware');
 
 router.post('/register', [
     // Validation middlewares can be added here
@@ -25,8 +25,8 @@ router.post('/login', [
 userController.loginUser
 );
 
-router.get('/profile', authMiddleware, userController.getUserProfile);
+router.get('/profile', authUser, userController.getUserProfile);
 
-router.get('/logout', authMiddleware, userController.logoutUser);
+router.get('/logout', authUser, userController.logoutUser);
 
 module.exports = router;
