@@ -1,6 +1,6 @@
 # Uber-Clone Backend API
 
-This backend provides user registration and authentication endpoints for the Uber-Clone project.
+This backend provides user registration, authentication, profile, and logout endpoints for the Uber-Clone project.
 
 ## Endpoints
 
@@ -59,6 +59,12 @@ This backend provides user registration and authentication endpoints for the Ube
     "message": "User already exists"
   }
   ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Error message"
+  }
+  ```
 
 ---
 
@@ -107,16 +113,105 @@ This backend provides user registration and authentication endpoints for the Ube
     "message": "Invalid email or password"
   }
   ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Error message"
+  }
+  ```
+
+---
+
+### 3. Get User Profile
+
+**URL:** `/api/user/profile`  
+**Method:** `GET`  
+**Description:** Returns the authenticated user's profile.  
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Request
+
+- No body required.
+- JWT token must be sent in cookie (`token`) or as `Authorization: Bearer <token>` header.
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "user": { ...userObject }
+  }
+  ```
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Authorization denied"
+  }
+  ```
+  or
+  ```json
+  {
+    "message": "Token has been revoked"
+  }
+  ```
+  or
+  ```json
+  {
+    "message": "Token is not valid"
+  }
+  ```
+- **404 Not Found**
+  ```json
+  {
+    "message": "User not found"
+  }
+  ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Server error"
+  }
+  ```
+
+---
+
+### 4. Logout User
+
+**URL:** `/api/user/logout`  
+**Method:** `GET`  
+**Description:** Logs out the user by clearing the JWT cookie and blacklisting the token.  
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Request
+
+- No body required.
+- JWT token must be sent in cookie (`token`) or as `Authorization: Bearer <token>` header.
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "message": "Logged out successfully"
+  }
+  ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Server error"
+  }
+  ```
 
 ---
 
 ## Notes
 
 - JWT token is sent as an HTTP-only cookie for authentication.
-- All endpoints expect JSON data in the request body.
+- All endpoints expect JSON data in the request body (except GET requests).
 - Validation errors are returned as an array under the `errors` key.
 - Passwords are hashed before saving.
 - User registration checks for existing email.
+- Logout blacklists the token for 24 hours.
 
 ---
 
@@ -133,6 +228,9 @@ This backend provides user registration and authentication endpoints for the Ube
   - `email`
   - `password` (hashed)
   - `socketId` (optional)
+- **BlacklistToken**
+  - `token`: JWT string
+  - `createdAt`: Date (expires after 24 hours)
 
 ---
 
@@ -141,7 +239,7 @@ This backend provides user registration and authentication endpoints for the Ube
 **Register:**
 
 ```bash
-curl -X POST http://localhost:PORT/api/user/register \
+curl -X POST http://localhost:4000/api/user/register \
   -H "Content-Type: application/json" \
   -d '{"fullname":{"firstname":"John","lastname":"Doe"},"email":"john@example.com","password":"yourpassword"}'
 ```
@@ -149,7 +247,35 @@ curl -X POST http://localhost:PORT/api/user/register \
 **Login:**
 
 ```bash
-curl -X POST http://localhost:PORT/api/user/login \
+curl -X POST http://localhost:4000/api/user/login \
   -H "Content-Type: application/json" \
   -d '{"email":"john@example.com","password":"yourpassword"}'
+```
+
+**Get Profile:**
+
+```bash
+curl -X GET http://localhost:4000/api/user/profile \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+or
+
+```bash
+curl -X GET http://localhost:4000/api/user/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+**Logout:**
+
+```bash
+curl -X GET http://localhost:4000/api/user/logout \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+or
+
+```bash
+curl -X GET http://localhost:4000/api/user/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
