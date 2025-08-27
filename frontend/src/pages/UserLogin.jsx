@@ -1,26 +1,51 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
+import axios from "axios";
+import { userDataContext } from "../context/UserContext";
+
+
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userData, setuserData] = useState({});
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // TODO: Add login logic
-    console.log("Logging in with", { email, password });
-    const newUserData = { email, password };
-    setuserData(newUserData);
-    console.log('Logging in with', newUserData); // correct value
+  const { user, setUser } = useContext(userDataContext);
 
-    setEmail('');
-    setPassword('');
-    
-    // navigate("/home");
-  };
+  const handleLogin = async (e) => {
+  e.preventDefault();
+
+  // frontend validation...
+  if (!email.includes("@")) {
+    return alert("Enter a valid email");
+  }
+  if (password.length < 6) {
+    return alert("Password must be at least 6 characters");
+  }
+
+  const loginData = { email, password };
+
+  try {
+    const response = await axios.post(`${BASE_URL}/api/user/login`, loginData, { withCredentials: true });
+    console.log("Login Response:", response.data);
+
+    setUser(response.data.user); // update context with user data
+    navigate("/home");
+
+    // ✅ clear fields after success
+    setEmail("");
+    setPassword("");
+  } catch (err) {
+    console.error(err);
+    alert(err.response?.data?.message || "Invalid email or password");
+
+    // optional: clear only password for security
+    setPassword("");
+  }
+};
+
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);

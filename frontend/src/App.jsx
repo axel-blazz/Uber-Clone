@@ -1,11 +1,12 @@
 import React, { useContext } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
 import UserLogin from './pages/UserLogin'
 import UserSignup from './pages/UserSignup'
 import CaptainLogin from './pages/CaptainLogin'
 import CaptainSignup from './pages/CaptainSignup'
-import { userDataContext } from './context/UserContext'
+import LandingPage from './pages/LandingPage'
+import Home from './pages/Home'
+import UserProtectedWrapper from './pages/UserProtectedWrapper'
 
 const App = () => {
   
@@ -14,11 +15,22 @@ const App = () => {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/user/login" element={<UserLogin />} />
         <Route path="/user/register" element={<UserSignup />} />
         <Route path='/captain/login' element={<CaptainLogin />} />
         <Route path='/captain/signup' element={<CaptainSignup />} />
+        {/* <Route path='/home' element={<Home />} /> */}
+
+        {/* Protect routes here */}
+        <Route
+          path="/home"
+          element={
+            <UserProtectedWrapper>
+              <Home />
+            </UserProtectedWrapper>
+          }
+        />
       </Routes>
     </>
   )

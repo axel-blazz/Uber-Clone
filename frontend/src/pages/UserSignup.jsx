@@ -1,26 +1,59 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
+import axios from "axios";
+import { userDataContext } from "../context/UserContext";
+
+
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
+
 
 function UserSignup() {
   const navigate = useNavigate();
   const [fullname, setFullname] = useState({ firstname: "", lastname: "" });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userData, setuserData] = useState({});
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    // TODO: Add register logic
-    console.log("Registering with", { fullname, email, password });
-    const payload = {
-      fullname,
-      email,
-      password
-    };
-    setuserData(payload);
-    console.log("Registering with", payload);
-  };
+  const { user, setUser } = useContext(userDataContext);
+
+
+  const handleRegister = async (e) => {
+  e.preventDefault();
+
+  // frontend validation...
+  if (!fullname.firstname) {
+    return alert("First name is required");
+  }
+  if (!email.includes("@")) {
+    return alert("Enter a valid email");
+  }
+  if (password.length < 6) {
+    return alert("Password must be at least 6 characters");
+  }
+
+  const newUser = { fullname, email, password };
+
+  try {
+    const response = await axios.post(`${BASE_URL}/api/user/register`, newUser, { withCredentials: true });
+    console.log("Response:", response.data);
+
+    setUser(response.data.user); // update context
+    navigate("/home");
+
+    // ✅ clear fields after success
+    setFullname({ firstname: "", lastname: "" });
+    setEmail("");
+    setPassword("");
+  } catch (err) {
+    console.error(err);
+    alert(err.response?.data?.message || "Something went wrong");
+
+    // optional: clear only password for security
+    setPassword("");
+  }
+};
+
+
 
   const handleSocialRegister = (provider) => {
     console.log(`Register with ${provider}`);

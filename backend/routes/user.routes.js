@@ -29,4 +29,8 @@ router.get('/profile', authUser, userController.getUserProfile);
 
 router.get('/logout', authUser, userController.logoutUser);
 
+router.get("/me", authUser , (req, res) => {
+  res.json(req.user); // user info from DB
+});
+
 module.exports = router;
