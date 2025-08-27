@@ -1,7 +1,5 @@
 const captainModel = require('../models/captain.model');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const blacklistTokenModel = require('../models/blacklistToken.model');
 const captainService = require('../services/captain.service');
 const { validationResult } = require('express-validator');
 

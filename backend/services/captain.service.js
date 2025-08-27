@@ -8,12 +8,12 @@ module.exports.createCaptain = async ({
         throw new Error('All fields are required');
     }
     // 2️⃣ Check if captain already exists
-    const existingCaptain = await captainModel.find({ email });
+    const existingCaptain = await captainModel.findOne({ email });
     if (existingCaptain) {
         throw new Error('Captain already exists');
     }
     // 3️⃣ Create captain (pre-save hook will hash password)
-    const captain = captainModel.create({
+    const captain = await captainModel.create({
         fullname: {
             firstname,
             lastname
