@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
+import axios from "axios";
+import { useContext } from "react";
+import { captainDataContext } from "../context/CaptainContext";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
 
 function CaptainSignup() {
   const navigate = useNavigate();
@@ -14,27 +19,55 @@ function CaptainSignup() {
     vehicleType: ""
   });
 
-  const handleRegister = (e) => {
+  const { captain, setCaptain } = useContext(captainDataContext);
+
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Build payload for API
-    const payload = {
-      fullname,
-      email,
-      password,
-      vehicle
-    };
-    console.log("Registering captain:", payload);
-    // TODO: call API
-    setFullname({ firstname: "", lastname: "" });
-    setEmail("");
-    setPassword("");
-    setVehicle({
-      color: "",
-      plate: "",
-      capacity: "",
-      vehicleType: ""
-    });
-    // navigate("/home");
+
+    // frontend validation...
+    if (!fullname.firstname) {
+      return alert("First name is required");
+    }
+    if (!email.includes("@")) {
+      return alert("Enter a valid email");
+    }
+    if (password.length < 6) {
+      return alert("Password must be at least 6 characters");
+    }
+    if (!vehicle.color || !vehicle.plate || !vehicle.capacity || !vehicle.vehicleType) {
+      return alert("All vehicle fields are required");
+    }
+
+    if(vehicle.capacity < 1) {
+      return alert("Capacity must be at least 1");
+    }
+
+    const newCaptain = { fullname, email, password, vehicle };
+
+    try {
+      const response = await axios.post(`${BASE_URL}/api/captain/register`, newCaptain, { withCredentials: true });
+      console.log("Captain Register Response:", response.data);
+
+      setCaptain(response.data.captain); // update context
+      navigate("/captain/home");
+
+      // ✅ clear fields after success
+      setFullname({ firstname: "", lastname: "" });
+      setEmail("");
+      setPassword("");
+      setVehicle({
+        color: "",
+        plate: "",
+        capacity: "",
+        vehicleType: ""
+      });
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Something went wrong");
+
+      // optional: clear only password for security
+      setPassword("");
+    }
   };
 
   const handleSocialRegister = (provider) => {

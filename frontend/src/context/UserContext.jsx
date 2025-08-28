@@ -8,11 +8,13 @@ const UserContext = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_BASE_URL}/api/user/me`, {
+    axios.get(`${import.meta.env.VITE_BASE_URL}/api/user/profile`, {
       withCredentials: true, // send cookie
     })
     .then(res => {
-      setUser(res.data);
+      console.log("User Profile Response:", res.data);
+      
+      setUser(res.data.user);
     })
     .catch(() => {
       setUser(null);

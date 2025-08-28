@@ -75,6 +75,9 @@ This backend provides user and captain registration, authentication, profile, an
 }
 ```
 
+- `email` (string, required, valid email, min 5 chars)
+- `password` (string, required, min 6 chars)
+
 #### Responses
 
 - **200 OK**
@@ -211,7 +214,7 @@ This backend provides user and captain registration, authentication, profile, an
 - `vehicle.color` (string, required, min 3 chars)
 - `vehicle.plate` (string, required, min 3 chars)
 - `vehicle.capacity` (integer, required, min 1)
-- `vehicle.vehicleType` (string, required, one of: `car`, `motorcycle`, `auto`)
+- `vehicle.vehicleType` (string, required, one of: `car`, `bike`, `van`)
 
 #### Responses
 
@@ -257,6 +260,9 @@ This backend provides user and captain registration, authentication, profile, an
   "password": "yourpassword"
 }
 ```
+
+- `email` (string, required, valid email)
+- `password` (string, required, min 6 chars)
 
 #### Responses
 
@@ -386,12 +392,20 @@ This backend provides user and captain registration, authentication, profile, an
   - `socketId` (optional)
 - **Captain**
   - `fullname`: `{ firstname, lastname }`
-  - `email`
-  - `password` (hashed)
-  - `socketId` (optional)
-  - `status`: `active` or `inactive`
-  - `vehicle`: `{ color, plate, capacity, vehicleType }`
-  - `location`: `{ ltd, lng }`
+  - `email` (string, required, unique, lowercase)
+  - `password` (string, required, hashed, select: false)
+  - `socketId` (string, optional)
+  - `status`: `active` or `inactive` (default: inactive)
+  - `vehicle`: {
+    - `color` (string, required, min 3 chars)
+    - `plate` (string, required, min 3 chars)
+    - `capacity` (number, required, min 1)
+    - `vehicleType` (string, required, one of: `car`, `bike`, `van`)
+      }
+  - `location`: {
+    - `ltd` (number)
+    - `lng` (number)
+      }
 - **BlacklistToken**
   - `token`: JWT string
   - `createdAt`: Date (expires after 24 hours)
