@@ -1,8 +1,6 @@
-
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 function LandingPage() {
-
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Image Section */}
@@ -24,7 +22,7 @@ function LandingPage() {
           </h1>
 
           <Link
-            to='/user/login'
+            to="/user/login"
             className="inline-block w-full bg-black hover:bg-gray-800 text-white py-6 text-lg font-semibold rounded-md transition-colors duration-200"
             onClick={() => navigate("/home")}
           >
@@ -36,4 +34,4 @@ function LandingPage() {
   );
 }
 
-export default LandingPage
+export default LandingPage;

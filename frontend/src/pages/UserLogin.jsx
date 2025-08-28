@@ -4,8 +4,7 @@ import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
 import axios from "axios";
 import { userDataContext } from "../context/UserContext";
 
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:4000";
 
 function Login() {
   const navigate = useNavigate();
@@ -15,37 +14,40 @@ function Login() {
   const { user, setUser } = useContext(userDataContext);
 
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // frontend validation...
-  if (!email.includes("@")) {
-    return alert("Enter a valid email");
-  }
-  if (password.length < 6) {
-    return alert("Password must be at least 6 characters");
-  }
+    // frontend validation...
+    if (!email.includes("@")) {
+      return alert("Enter a valid email");
+    }
+    if (password.length < 6) {
+      return alert("Password must be at least 6 characters");
+    }
 
-  const loginData = { email, password };
+    const loginData = { email, password };
 
-  try {
-    const response = await axios.post(`${BASE_URL}/api/user/login`, loginData, { withCredentials: true });
-    console.log("Login Response:", response.data);
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/user/login`,
+        loginData,
+        { withCredentials: true },
+      );
+      console.log("Login Response:", response.data);
 
-    setUser(response.data.user); // update context with user data
-    navigate("/home");
+      setUser(response.data.user); // update context with user data
+      navigate("/home");
 
-    // ✅ clear fields after success
-    setEmail("");
-    setPassword("");
-  } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.message || "Invalid email or password");
+      // ✅ clear fields after success
+      setEmail("");
+      setPassword("");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Invalid email or password");
 
-    // optional: clear only password for security
-    setPassword("");
-  }
-};
-
+      // optional: clear only password for security
+      setPassword("");
+    }
+  };
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);
@@ -91,18 +93,20 @@ function Login() {
             Login
           </button>
           <Link
-          to={'/captain/login'}
-          className="flex items-center justify-center w-full bg-gray-900 text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-800 transition-colors"
-        >
-          Sign In as Captain
-        </Link>
-
+            to={"/captain/login"}
+            className="flex items-center justify-center w-full bg-gray-900 text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-800 transition-colors"
+          >
+            Sign In as Captain
+          </Link>
         </form>
 
         {/* Register link */}
         <p className="text-center text-gray-500 text-sm mt-5">
           Don’t have an account?{" "}
-          <Link to="/user/register" className="text-gray-900 font-medium hover:underline">
+          <Link
+            to="/user/register"
+            className="text-gray-900 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>

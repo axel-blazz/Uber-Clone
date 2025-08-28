@@ -1,5 +1,5 @@
-const Hospital = require('../models/hospital.model');
-const mapsService = require('../services/maps.service');
+const Hospital = require("../models/hospital.model");
+const mapsService = require("../services/maps.service");
 
 module.exports.findNearestHospital = async (pickupCoords) => {
   const hospitals = await Hospital.find(); // all hospitals
@@ -10,17 +10,21 @@ module.exports.findNearestHospital = async (pickupCoords) => {
   for (let hospital of hospitals) {
     const result = await mapsService.getDistanceAndDuration(
       pickupCoords,
-      hospital.location // { lat, lng } from DB
+      hospital.location, // { lat, lng } from DB
     );
 
     if (result.distance < minDistance) {
       minDistance = result.distance;
-      nearestHospital = { ...hospital.toObject(), distance: result.distance, duration: result.duration };
+      nearestHospital = {
+        ...hospital.toObject(),
+        distance: result.distance,
+        duration: result.duration,
+      };
     }
   }
 
   return nearestHospital;
-}
+};
 // Example return value:
 // {
 //   _id: "...",

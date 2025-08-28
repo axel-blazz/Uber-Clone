@@ -8,20 +8,21 @@ const UserContext = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_BASE_URL}/api/user/profile`, {
-      withCredentials: true, // send cookie
-    })
-    .then(res => {
-      console.log("User Profile Response:", res.data);
-      
-      setUser(res.data.user);
-    })
-    .catch(() => {
-      setUser(null);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+    axios
+      .get(`${import.meta.env.VITE_BASE_URL}/api/user/profile`, {
+        withCredentials: true, // send cookie
+      })
+      .then((res) => {
+        console.log("User Profile Response:", res.data);
+
+        setUser(res.data.user);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (

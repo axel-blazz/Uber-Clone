@@ -1,33 +1,46 @@
-const router = require('express').Router();
-const { body } = require('express-validator');
-const userController = require('../controllers/user.controller');
-const { authUser } = require('../middlewares/auth.middleware');
+const router = require("express").Router();
+const { body } = require("express-validator");
+const userController = require("../controllers/user.controller");
+const { authUser } = require("../middlewares/auth.middleware");
 
-router.post('/register', [
+router.post(
+  "/register",
+  [
     // Validation middlewares can be added here
-    body('fullname.firstname').isLength({ min: 3 }).withMessage('First name must be at least 3 characters long'),
-    body('fullname.lastname').optional().isLength({ min: 3 }).withMessage('Last name must be at least 3 characters long'),
-    body('email').isEmail().withMessage('Invalid email format'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-], 
-    // controller function 
-userController.registerUser
+    body("fullname.firstname")
+      .isLength({ min: 3 })
+      .withMessage("First name must be at least 3 characters long"),
+    body("fullname.lastname")
+      .optional()
+      .isLength({ min: 3 })
+      .withMessage("Last name must be at least 3 characters long"),
+    body("email").isEmail().withMessage("Invalid email format"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
+  ],
+  // controller function
+  userController.registerUser,
 );
 
-router.post('/login', [
+router.post(
+  "/login",
+  [
     // Validation middlewares can be added here
-    body('email').isEmail().withMessage('Invalid email format'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-],
-    // controller function
-userController.loginUser
+    body("email").isEmail().withMessage("Invalid email format"),
+    body("password")
+      .isLength({ min: 6 })
+      .withMessage("Password must be at least 6 characters long"),
+  ],
+  // controller function
+  userController.loginUser,
 );
 
-router.get('/profile', authUser, userController.getUserProfile);
+router.get("/profile", authUser, userController.getUserProfile);
 
-router.get('/logout', authUser, userController.logoutUser);
+router.get("/logout", authUser, userController.logoutUser);
 
-router.get("/me", authUser , (req, res) => {
+router.get("/me", authUser, (req, res) => {
   res.json(req.user); // user info from DB
 });
 

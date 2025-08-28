@@ -471,6 +471,44 @@ This backend provides user and captain registration, authentication, profile, an
   }
   ```
 
+### 4. Get Place Suggestions (Auto-complete)
+
+**URL:** `/api/maps/place-suggestions`
+**Method:** `GET`
+**Description:** Returns auto-suggested places for a given input string using Google Places API.
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Query Parameters
+
+`input` (string, required)
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "suggestions": [
+      {
+        "description": "MG Road, Bengaluru, Karnataka, India",
+        "place_id": "ChIJLfySpTOuEmsRsc_JfJtljdc"
+      }
+      // ...more predictions
+    ]
+  }
+  ```
+- **400 Bad Request**
+  ```json
+  {
+    "message": "input query parameter is required"
+  }
+  ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Error message"
+  }
+  ```
+
 ---
 
 ## HOSPITAL SERVICE
@@ -672,3 +710,19 @@ curl -X GET "http://localhost:4000/api/maps/get-address?lat=12.9716&lng=77.5946"
 ```
 
 ---
+
+**Get Minimum Distance and Time:**
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/get-distance-duration?originLat=12.9716&originLng=77.5946&destLat=12.9352&destLng=77.6245" \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+---
+
+**Get Place Suggestions:**
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/place-suggestions?input=MG%20Road" \
+  --cookie "token=YOUR_JWT_TOKEN"
+```

@@ -5,7 +5,7 @@ import axios from "axios";
 import { useContext } from "react";
 import { captainDataContext } from "../context/CaptainContext";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:4000";
 
 function CaptainLogin() {
   const navigate = useNavigate();
@@ -28,7 +28,11 @@ function CaptainLogin() {
     const loginData = { email, password };
 
     try {
-      const response = await axios.post(`${BASE_URL}/api/captain/login`, loginData, { withCredentials: true });
+      const response = await axios.post(
+        `${BASE_URL}/api/captain/login`,
+        loginData,
+        { withCredentials: true },
+      );
       console.log("Captain Login Response:", response.data);
 
       setCaptain(response.data.captain); // update context with captain data
@@ -45,7 +49,6 @@ function CaptainLogin() {
       setPassword("");
     }
   };
-
 
   const handleSocialLogin = (provider) => {
     console.log(`Login with ${provider}`);
@@ -91,18 +94,20 @@ function CaptainLogin() {
             Login
           </button>
           <Link
-          to={'/user/login'}
-          className="flex items-center justify-center w-full bg-gray-900 text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-800 transition-colors"
-        >
-          Sign In as User
-        </Link>
-
+            to={"/user/login"}
+            className="flex items-center justify-center w-full bg-gray-900 text-white py-3 rounded-lg text-lg font-semibold hover:bg-gray-800 transition-colors"
+          >
+            Sign In as User
+          </Link>
         </form>
 
         {/* Register link */}
         <p className="text-center text-gray-500 text-sm mt-5">
           Don’t have an account?{" "}
-          <Link to="/captain/signup" className="text-gray-900 font-medium hover:underline">
+          <Link
+            to="/captain/signup"
+            className="text-gray-900 font-medium hover:underline"
+          >
             Register
           </Link>
         </p>

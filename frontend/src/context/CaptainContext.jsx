@@ -8,18 +8,19 @@ const CaptainContext = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${import.meta.env.VITE_BASE_URL}/api/captain/profile`, {
-      withCredentials: true, // send cookie
-    })
-    .then(res => {
-      setCaptain(res.data.user);
-    })
-    .catch(() => {
-      setCaptain(null);
-    })
-    .finally(() => {
-      setLoading(false);
-    });
+    axios
+      .get(`${import.meta.env.VITE_BASE_URL}/api/captain/profile`, {
+        withCredentials: true, // send cookie
+      })
+      .then((res) => {
+        setCaptain(res.data.user);
+      })
+      .catch(() => {
+        setCaptain(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   return (

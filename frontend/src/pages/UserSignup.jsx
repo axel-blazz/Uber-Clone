@@ -4,9 +4,7 @@ import { FaGoogle, FaFacebookF, FaApple } from "react-icons/fa";
 import axios from "axios";
 import { userDataContext } from "../context/UserContext";
 
-
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4000';
-
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:4000";
 
 function UserSignup() {
   const navigate = useNavigate();
@@ -16,44 +14,45 @@ function UserSignup() {
 
   const { user, setUser } = useContext(userDataContext);
 
-
   const handleRegister = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // frontend validation...
-  if (!fullname.firstname) {
-    return alert("First name is required");
-  }
-  if (!email.includes("@")) {
-    return alert("Enter a valid email");
-  }
-  if (password.length < 6) {
-    return alert("Password must be at least 6 characters");
-  }
+    // frontend validation...
+    if (!fullname.firstname) {
+      return alert("First name is required");
+    }
+    if (!email.includes("@")) {
+      return alert("Enter a valid email");
+    }
+    if (password.length < 6) {
+      return alert("Password must be at least 6 characters");
+    }
 
-  const newUser = { fullname, email, password };
+    const newUser = { fullname, email, password };
 
-  try {
-    const response = await axios.post(`${BASE_URL}/api/user/register`, newUser, { withCredentials: true });
-    console.log("Response:", response.data);
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/user/register`,
+        newUser,
+        { withCredentials: true },
+      );
+      console.log("Response:", response.data);
 
-    setUser(response.data.user); // update context
-    navigate("/home");
+      setUser(response.data.user); // update context
+      navigate("/home");
 
-    // ✅ clear fields after success
-    setFullname({ firstname: "", lastname: "" });
-    setEmail("");
-    setPassword("");
-  } catch (err) {
-    console.error(err);
-    alert(err.response?.data?.message || "Something went wrong");
+      // ✅ clear fields after success
+      setFullname({ firstname: "", lastname: "" });
+      setEmail("");
+      setPassword("");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Something went wrong");
 
-    // optional: clear only password for security
-    setPassword("");
-  }
-};
-
-
+      // optional: clear only password for security
+      setPassword("");
+    }
+  };
 
   const handleSocialRegister = (provider) => {
     console.log(`Register with ${provider}`);
@@ -70,23 +69,31 @@ function UserSignup() {
         <form onSubmit={handleRegister} className="space-y-4">
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="block text-gray-700 text-sm mb-2">First Name</label>
+              <label className="block text-gray-700 text-sm mb-2">
+                First Name
+              </label>
               <input
                 type="text"
                 placeholder="John"
                 value={fullname.firstname}
-                onChange={(e) => setFullname({ ...fullname, firstname: e.target.value })}
+                onChange={(e) =>
+                  setFullname({ ...fullname, firstname: e.target.value })
+                }
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition"
                 required
               />
             </div>
             <div className="flex-1">
-              <label className="block text-gray-700 text-sm mb-2">Last Name</label>
+              <label className="block text-gray-700 text-sm mb-2">
+                Last Name
+              </label>
               <input
                 type="text"
                 placeholder="Doe"
                 value={fullname.lastname}
-                onChange={(e) => setFullname({ ...fullname, lastname: e.target.value })}
+                onChange={(e) =>
+                  setFullname({ ...fullname, lastname: e.target.value })
+                }
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition"
                 required
               />
@@ -128,7 +135,10 @@ function UserSignup() {
         {/* Login link */}
         <p className="text-center text-gray-500 text-sm mt-5">
           Already have an account?{" "}
-          <Link to="/user/login" className="text-gray-900 font-medium hover:underline">
+          <Link
+            to="/user/login"
+            className="text-gray-900 font-medium hover:underline"
+          >
             Login
           </Link>
         </p>
