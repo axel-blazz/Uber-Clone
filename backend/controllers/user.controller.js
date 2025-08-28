@@ -1,7 +1,6 @@
 // controllers/authController.js
 const { validationResult } = require('express-validator');
 const userService = require('../services/user.service');
-const jwt = require('jsonwebtoken');
 const UserModel = require('../models/user.model');
 const blacklistTokenModel = require('../models/blacklistToken.model');
 

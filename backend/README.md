@@ -366,6 +366,73 @@ This backend provides user and captain registration, authentication, profile, an
 
 ---
 
+## MAPS ROUTES
+
+### 1. Get Coordinates from Address
+
+**URL:** `/api/maps/get-coordinates`
+**Method:** `GET`
+**Description:** Returns latitude and longitude for a given address.
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Query Parameters
+`address` (string, required)
+
+#### Responses
+- **200 OK**
+  ```json
+  {
+    "coordinates": {
+      "lat": 12.9716,
+      "lng": 77.5946
+    }
+  }
+  ```
+- **400 Bad Request**
+  ```json
+  {
+    "message": "Address query parameter is required"
+  }
+  ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Error message"
+  }
+  ```
+
+### 2. Get Address from Coordinates
+
+**URL:** `/api/maps/get-address`
+**Method:** `GET`
+**Description:** Returns address for given latitude and longitude.
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Query Parameters
+`lat` (number, required), `lng` (number, required)
+
+#### Responses
+- **200 OK**
+  ```json
+  {
+    "address": "123 Main St, City, Country"
+  }
+  ```
+- **400 Bad Request**
+  ```json
+  {
+    "message": "lat and lng query parameters are required"
+  }
+  ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Error message"
+  }
+  ```
+
+---
+
 ## Notes
 
 - JWT token is sent as an HTTP-only cookie for authentication.
@@ -409,7 +476,26 @@ This backend provides user and captain registration, authentication, profile, an
 - **BlacklistToken**
   - `token`: JWT string
   - `createdAt`: Date (expires after 24 hours)
-
+- **Hospital**
+  - `name`: String (required)
+  - `location`: {
+    - `lat`: Number (required)
+    - `lng`: Number (required)
+    }
+  - `capacity`: Number (optional, default: 0)
+- **Ride**
+  - `user`: ObjectId (ref: 'user', required)
+  - `captain`: ObjectId (ref: 'captain')
+  - `pickup`: String (required)
+  - `destination`: ObjectId (ref: 'hospital', required)
+  - `fare`: Number (required)
+  - `status`: String (enum: ['pending', 'accepted', 'ongoing', 'completed', 'cancelled'], default: 'pending')
+  - `duration`: Number (in seconds)
+  - `distance`: Number (in meters)
+  - `paymentID`: String
+  - `orderId`: String
+  - `signature`: String
+  - `otp`: String (required, select: false)
 ---
 
 ## Example Usage
@@ -503,3 +589,25 @@ or
 curl -X GET http://localhost:4000/api/captain/logout \
   -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
+
+---
+
+**Get Coordinates from Address:**
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/get-coordinates?address=MG%20Road%20Bangalore" \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+**Get Address from Coordinates:**
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/get-address?lat=12.9716&lng=77.5946" \
+  --cookie "token=YOUR_JWT_TOKEN"
+```
+
+
+---
+
+
+

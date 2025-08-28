@@ -1,0 +1,31 @@
+const mapsService = require('../services/maps.service');
+
+// Get coordinates from address
+module.exports.getCoordinates = async (req, res, next) => {
+    try {
+        const { address } = req.query;
+        if (!address) {
+            return res.status(400).json({ message: 'Address query parameter is required' });
+        }
+        const coordinates = await mapsService.getAddressCoordinates(address);
+        res.status(200).json({ coordinates });
+    } catch (error) {
+        console.error('Error in getCoordinates controller:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+}
+
+// Get address from coordinates
+module.exports.getAddress = async (req, res, next) => {
+    try {
+        const { lat, lng } = req.query;
+        if (!lat || !lng) {
+            return res.status(400).json({ message: 'lat and lng query parameters are required' });
+        }
+        const address = await mapsService.getCoordinatesAddress(lat, lng);
+        res.status(200).json({ address });
+    } catch (error) {
+        console.error('Error in getAddress controller:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+}
