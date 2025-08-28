@@ -8,4 +8,7 @@ router.get('/get-coordinates', authUser, mapsController.getCoordinates);
 // Get address from coordinates
 router.get('/get-address', authUser, mapsController.getAddress);
 
+// Get distance and duration between two points
+router.get('/get-distance-duration', authUser, mapsController.getDistanceAndDuration);
+
 module.exports = router;

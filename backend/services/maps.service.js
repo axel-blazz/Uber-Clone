@@ -41,3 +41,32 @@ module.exports.getCoordinatesAddress = async (lat, lng) => {
         throw error;
     }
 }
+
+module.exports.getDistanceAndDuration = async (origin, destination) => {
+    try {
+        if (!origin || !destination) {
+            throw new Error('Origin and destination are required');
+        }
+        const response = await axios.get('https://maps.googleapis.com/maps/api/distancematrix/json', {
+            params: {
+                origins: `${origin.lat},${origin.lng}`,
+                destinations: `${destination.lat},${destination.lng}`,
+                key: API_KEY
+            }
+        });
+        if (response.data.status !== 'OK') {
+            throw new Error('Error fetching distance matrix');
+        }
+        const element = response.data.rows[0].elements[0];
+        if (element.status !== 'OK') {
+            throw new Error('Error with the provided locations');
+        }
+        return {
+            distance: element.distance.value, // in meters
+            duration: element.duration.value  // in seconds
+        };
+    } catch (error) {
+        console.error('Error in getDistanceAndDuration:', error.message);
+        throw error;
+    }
+}

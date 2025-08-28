@@ -376,9 +376,11 @@ This backend provides user and captain registration, authentication, profile, an
 **Authentication:** Requires JWT token in cookie or `Authorization` header.
 
 #### Query Parameters
+
 `address` (string, required)
 
 #### Responses
+
 - **200 OK**
   ```json
   {
@@ -409,9 +411,11 @@ This backend provides user and captain registration, authentication, profile, an
 **Authentication:** Requires JWT token in cookie or `Authorization` header.
 
 #### Query Parameters
+
 `lat` (number, required), `lng` (number, required)
 
 #### Responses
+
 - **200 OK**
   ```json
   {
@@ -430,6 +434,66 @@ This backend provides user and captain registration, authentication, profile, an
     "message": "Error message"
   }
   ```
+
+### 3. Get Distance and Duration Between Two Points
+
+**URL:** `/api/maps/get-distance-duration`
+**Method:** `GET`
+**Description:** Returns the distance (in meters) and duration (in seconds) between two locations.
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Query Parameters
+
+- `originLat` (number, required): Latitude of origin
+- `originLng` (number, required): Longitude of origin
+- `destLat` (number, required): Latitude of destination
+- `destLng` (number, required): Longitude of destination
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "distance": 1200,
+    "duration": 300
+  }
+  ```
+- **400 Bad Request**
+  ```json
+  {
+    "message": "originLat, originLng, destLat, and destLng query parameters are required"
+  }
+  ```
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Error message"
+  }
+  ```
+
+---
+
+## HOSPITAL SERVICE
+
+### Find Nearest Hospital
+
+**Description:** Finds the nearest hospital to a given pickup location using the Google Maps Distance Matrix API.
+
+**Usage:**
+Call `findNearestHospital(pickupCoords)` where `pickupCoords` is an object `{ lat, lng }`.
+
+**Returns:**
+
+```json
+{
+  "_id": "...",
+  "name": "City Hospital",
+  "location": { "lat": ..., "lng": ... },
+  "capacity": 50,
+  "distance": 1200, // in meters
+  "duration": 300   // in seconds
+}
+```
 
 ---
 
@@ -481,7 +545,7 @@ This backend provides user and captain registration, authentication, profile, an
   - `location`: {
     - `lat`: Number (required)
     - `lng`: Number (required)
-    }
+      }
   - `capacity`: Number (optional, default: 0)
 - **Ride**
   - `user`: ObjectId (ref: 'user', required)
@@ -496,6 +560,7 @@ This backend provides user and captain registration, authentication, profile, an
   - `orderId`: String
   - `signature`: String
   - `otp`: String (required, select: false)
+
 ---
 
 ## Example Usage
@@ -606,8 +671,4 @@ curl -X GET "http://localhost:4000/api/maps/get-address?lat=12.9716&lng=77.5946"
   --cookie "token=YOUR_JWT_TOKEN"
 ```
 
-
 ---
-
-
-
