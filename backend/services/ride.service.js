@@ -1,5 +1,6 @@
 const rideModel = require("../models/ride.model");
 const mapsService = require("./maps.service");
+const crypto = require("crypto");
 
 module.exports.createRide = async ({
   userId,
@@ -66,3 +67,13 @@ module.exports.confirmRide = async (rideId, captain) => {
     .select("+otp");
   return ride;
 };
+
+function generateOTP(num) {
+    const digits = "0123456789";
+    let otp = "";
+    for (let i = 0; i < num; i++) {
+        const randIndex = crypto.randomInt(0, digits.length);
+        otp += digits[randIndex];
+    }
+    return otp;
+}

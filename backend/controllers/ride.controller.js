@@ -1,8 +1,8 @@
 const { validationResult } = require("express-validator");
-const rideService = require("../services/rideService");
-const mapsService = require("../services/mapsService");
-const hospitalService = require("../services/hospitalService");
-const Ride = require("../models/rideModel");
+const rideService = require("../services/ride.service");
+const mapsService = require("../services/maps.service");
+const hospitalService = require("../services/hospital.service");
+const Ride = require("../models/ride.model");
 
 module.exports.createRide = async (req, res, next) => {
   try {
@@ -21,7 +21,7 @@ module.exports.createRide = async (req, res, next) => {
     }
 
     // ✅ Find nearest hospital
-    const nearestHospital = await hospitalService(pickupCoords);
+    const nearestHospital = await hospitalService.findNearestHospital(pickupCoords);
     if (!nearestHospital) {
       return res.status(500).json({ message: "No hospitals found nearby" });
     }

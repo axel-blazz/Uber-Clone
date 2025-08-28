@@ -726,3 +726,226 @@ curl -X GET "http://localhost:4000/api/maps/get-distance-duration?originLat=12.9
 curl -X GET "http://localhost:4000/api/maps/place-suggestions?input=MG%20Road" \
   --cookie "token=YOUR_JWT_TOKEN"
 ```
+
+---
+
+## RIDE ROUTES
+
+### 1. Create Ride
+
+**URL:** `/api/ride/create-ride`  
+**Method:** `POST`  
+**Description:** Requests a new ride for a user.  
+**Authentication:** Requires JWT token in cookie or `Authorization` header.
+
+#### Request Body
+
+```json
+{
+  "pickup": "123 Main St, City",
+  "vehicleType": "car"
+}
+```
+
+- `pickup` (string, required, min 3 chars)
+- `vehicleType` (string, required, one of: `car`, `bike`, `van`)
+
+#### Validations (express-validator)
+
+- `body('pickup').isString().isLength({ min: 3 })`
+- `body('vehicleType').isString().isIn(['car','bike','van'])`
+
+#### Responses
+
+- **201 Created**
+  ```json
+  {
+    "ride": {
+      "_id": "...",
+      "user": { ...userObject },
+      "pickup": "123 Main St, City",
+      "pickupCoords": { "lat": 12.97, "lng": 77.59 },
+      "destination": { ...hospitalObject },
+      "fare": 120,
+      "distance": 5000,
+      "duration": 600,
+      "vehicleType": "car",
+      "status": "pending"
+    }
+  }
+  ```
+- **400 Bad Request**
+  ```json
+  { "message": "No captains available nearby" }
+  ```
+- **500 Internal Server Error**
+  ```json
+  { "message": "No hospitals found nearby" }
+  ```
+
+### 2. Confirm Ride
+
+**URL:** `/api/ride/confirm`  
+**Method:** `POST`  
+**Description:** Captain confirms and accepts a pending ride (also used when user/captain provides OTP).  
+**Authentication:** Requires JWT token.
+
+#### Request Body
+
+```json
+{
+  "rideId": "<rideObjectId>",
+  "captainId": "<captainObjectId>",
+  "otp": "1234"
+}
+```
+
+#### Validations
+
+- `body('rideId').isMongoId()`
+- `body('captainId').isMongoId()`
+- `body('otp').isNumeric().isLength({ min: 4, max: 6 })`
+
+#### Responses
+
+- **200 OK**
+  ```json
+  { "ride": { ...rideObjectWithStatusAccepted } }
+  ```
+- **400 Bad Request**
+  ```json
+  { "message": "Invalid OTP or ride cannot be accepted" }
+  ```
+
+### 3. Cancel Ride
+
+**URL:** `/api/ride/cancel`  
+**Method:** `POST`  
+**Description:** Allows user or captain to cancel a pending/accepted ride.  
+**Authentication:** Requires JWT token.
+
+#### Request Body
+
+```json
+{
+  "rideId": "<rideObjectId>",
+  "reason": "User changed plans"
+}
+```
+
+#### Validations
+
+- `body('rideId').isMongoId()`
+- `body('reason').optional().isString().isLength({ min: 3 })`
+
+#### Responses
+
+- **200 OK**
+  ```json
+  { "message": "Ride cancelled", "ride": { ...rideObjectWithStatusCancelled } }
+  ```
+
+### 4. Get Ride Status
+
+**URL:** `/api/ride/status`  
+**Method:** `GET`  
+**Description:** Returns the current status and details for a ride.  
+**Authentication:** Requires JWT token.
+
+#### Query Parameters
+
+- `rideId` (string, required)
+
+#### Responses
+
+- **200 OK**
+  ```json
+  { "ride": { "_id": "...", "status": "accepted", "captain": {... } } }
+  ```
+
+---
+
+## CAPTAIN (ADDITIONAL) ROUTES
+
+### 1. Get Available Captains
+
+**URL:** `/api/captain/available`  
+**Method:** `GET`  
+**Description:** Returns captains within a radius around a coordinate filtered by vehicle type.
+**Authentication:** Requires JWT token.
+
+#### Query Parameters
+
+- `lat` (number, required)
+- `lng` (number, required)
+- `radius` (number, optional, in km, default: 5)
+- `vehicleType` (string, optional, one of `car`,`bike`,`van`)
+
+#### Validations
+
+- `query('lat').isFloat()`
+- `query('lng').isFloat()`
+- `query('radius').optional().isFloat()`
+- `query('vehicleType').optional().isIn(['car','bike','van'])`
+
+#### Responses
+
+- **200 OK**
+  ```json
+  { "captains": [ { "_id": "...", "fullname": {...}, "vehicleType":"car", "location": {"lat":...,"lng":...} } ] }
+  ```
+
+---
+
+## MODEL & VALIDATION UPDATES
+
+Below are model field clarifications and small additions introduced after initial scaffolding.
+
+- **Ride** (updates / additions)
+
+  - `pickupCoords`: `{ lat: Number, lng: Number }` (added — used for routing & distance calculations)
+  - `otp`: `String` (select: false) — one-time-code sent/used for confirming pickup
+  - `otpExpires`: `Date` — optional expiry for OTP (e.g. 5 minutes)
+  - `timestamps`: `createdAt`, `updatedAt` (recommended)
+  - `payment`: `{ paymentID, orderId, signature }` (optional — retained for payment gateways)
+
+- **Captain** (clarifications)
+
+  - `location`: `{ lat: Number, lng: Number }` (use consistent lat/lng keys)
+  - `isAvailable`: `Boolean` (default: true) — used to filter available captains
+  - ensure a geospatial index exists for quick radius queries (e.g. either GeoJSON or $geoWithin with {lat,lng})
+
+- **Hospital** (additional optional flag)
+  - `isAccepting`: `Boolean` (optional, default: true) — if a hospital is temporarily not accepting transfers
+
+### Validation summary (recommended patterns)
+
+- Use `express-validator` on routes to validate required fields, types, and enums.
+- For IDs prefer `isMongoId()` checks.
+- For coordinates prefer `isFloat()` and a small sanity range check when possible.
+
+---
+
+## EXAMPLES (new)
+
+**Confirm Ride:**
+
+```bash
+curl -X POST http://localhost:4000/api/ride/confirm \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"rideId":"<rideId>","captainId":"<captainId>","otp":"1234"}'
+```
+
+**Get Available Captains:**
+
+```bash
+curl -X GET "http://localhost:4000/api/captain/available?lat=12.9716&lng=77.5946&radius=5&vehicleType=car" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+## NOTES
+
+- These additions are intentionally minimal and focused on keeping the API predictable. If you prefer GeoJSON `Point` documents for captain `location` instead of `{lat,lng}`, update the models and queries accordingly; both approaches are common, but GeoJSON enables `$near` queries and indexes like `{ type: "Point", coordinates: [lng, lat] }`.

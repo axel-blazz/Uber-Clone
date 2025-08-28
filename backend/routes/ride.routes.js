@@ -4,8 +4,6 @@ const rideController = require("../controllers/ride.controller");
 const { body, query } = require("express-validator");
 
 // Request a new ride
-const { body } = require("express-validator");
-
 router.post(
   "/create-ride",
   authUser,
