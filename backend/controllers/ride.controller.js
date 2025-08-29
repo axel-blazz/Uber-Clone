@@ -32,9 +32,6 @@ module.exports.createRide = async (req, res, next) => {
       pickup,
       pickupCoords,
       nearestHospital,
-      // fare,
-      // distance,
-      // duration,
       vehicleType,
     });
 

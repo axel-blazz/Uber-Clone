@@ -2,200 +2,193 @@
 
 This backend provides user and captain registration, authentication, profile, and logout endpoints for the Uber-Clone project.
 
+# Uber-Clone Backend API
+
+This document provides a standardized API reference for the Uber-Clone backend.
+
+Base URL: `http://localhost:4000/api`
+
+Authentication
+
+- Primary: JWT via HTTP-only cookie named `token` or the `Authorization: Bearer <token>` header.
+
+Conventions
+
+- Use JSON for request and response bodies unless noted.
+- Validation: `express-validator` patterns are suggested for each endpoint.
+
+Layout for each endpoint
+
+- URL
+- Method
+- Authentication (Yes/No)
+- Description
+- Query parameters (for GET)
+- Request body (for POST/PUT)
+- Validations (express-validator)
+- Successful response (example)
+- Error responses (examples)
+- Example curl
+
 ---
 
-## USER ROUTES
+## USER
 
-### 1. Register User
+### POST /user/register
 
-**URL:** `/api/user/register`  
-**Method:** `POST`  
-**Description:** Registers a new user.
+- Authentication: No
+- Description: Register a new user.
 
-#### Request Body
+Request body
 
 ```json
 {
-  "fullname": {
-    "firstname": "John",
-    "lastname": "Doe"
-  },
+  "fullname": { "firstname": "John", "lastname": "Doe" },
   "email": "john@example.com",
   "password": "yourpassword"
 }
 ```
 
-- `fullname.firstname` (string, required, min 3 chars)
-- `fullname.lastname` (string, optional, min 3 chars)
-- `email` (string, required, valid email, min 5 chars)
-- `password` (string, required, min 6 chars)
+Validations
 
-#### Responses
+- `body('fullname.firstname').isString().isLength({ min: 3 })`
+- `body('email').isEmail().isLength({ min: 5 })`
+- `body('password').isString().isLength({ min: 6 })`
 
-- **201 Created**
-  ```json
-  {
-    "user": { ...userObject },
-    "token": "JWT_TOKEN"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "errors": [ ... ]
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "User already exists"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
-
----
-
-### 2. Login User
-
-**URL:** `/api/user/login`  
-**Method:** `POST`  
-**Description:** Authenticates a user and returns a JWT token.
-
-#### Request Body
+Success (201)
 
 ```json
 {
-  "email": "john@example.com",
-  "password": "yourpassword"
+  "user": {
+    /* user object */
+  },
+  "token": "JWT_TOKEN"
 }
 ```
 
-- `email` (string, required, valid email, min 5 chars)
-- `password` (string, required, min 6 chars)
+Errors
 
-#### Responses
+- 400: Validation errors or user already exists
+- 500: Server error
 
-- **200 OK**
-  ```json
-  {
-    "user": { ...userObject },
-    "jwt_token": "JWT_TOKEN"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "errors": [ ... ]
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Invalid email or password"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/user/register \
+  -H "Content-Type: application/json" \
+  -d '{"fullname":{"firstname":"John","lastname":"Doe"},"email":"john@example.com","password":"yourpassword"}'
+```
 
 ---
 
-### 3. Get User Profile
+### POST /user/login
 
-**URL:** `/api/user/profile`  
-**Method:** `GET`  
-**Description:** Returns the authenticated user's profile.  
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
+- Authentication: No
+- Description: Login and receive JWT.
 
-#### Responses
+Request body
 
-- **200 OK**
-  ```json
-  {
-    "user": { ...userObject }
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "message": "Authorization denied"
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Token has been revoked"
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Token is not valid"
-  }
-  ```
-- **404 Not Found**
-  ```json
-  {
-    "message": "User not found"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Server error"
-  }
-  ```
+```json
+{ "email": "john@example.com", "password": "yourpassword" }
+```
 
----
+Validations
 
-### 4. Logout User
+- `body('email').isEmail()`
+- `body('password').isString().isLength({ min: 6 })`
 
-**URL:** `/api/user/logout`  
-**Method:** `GET`  
-**Description:** Logs out the user by clearing the JWT cookie and blacklisting the token.  
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
-
-#### Responses
-
-- **200 OK**
-  ```json
-  {
-    "message": "Logged out successfully"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Server error"
-  }
-  ```
-
----
-
-## CAPTAIN ROUTES
-
-### 1. Register Captain
-
-**URL:** `/api/captain/register`  
-**Method:** `POST`  
-**Description:** Registers a new captain.
-
-#### Request Body
+Success (200)
 
 ```json
 {
-  "fullname": {
-    "firstname": "Jane",
-    "lastname": "Smith"
+  "user": {
+    /* user object */
   },
+  "jwt_token": "JWT_TOKEN"
+}
+```
+
+Errors
+
+- 400: Invalid credentials or validation errors
+- 500: Server error
+
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/user/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"john@example.com","password":"yourpassword"}'
+```
+
+---
+
+### GET /user/profile
+
+- Authentication: Yes
+- Description: Returns authenticated user's profile.
+
+Success (200)
+
+```json
+{
+  "user": {
+    /* user object */
+  }
+}
+```
+
+Errors
+
+- 401: Authorization denied / invalid token / revoked
+- 404: User not found
+- 500: Server error
+
+Example
+
+```bash
+curl -X GET http://localhost:4000/api/user/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### GET /user/logout
+
+- Authentication: Yes
+- Description: Clears JWT cookie and blacklists token.
+
+Success (200)
+
+```json
+{ "message": "Logged out successfully" }
+```
+
+Errors
+
+- 500: Server error
+
+Example
+
+```bash
+curl -X GET http://localhost:4000/api/user/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+## CAPTAIN
+
+### POST /captain/register
+
+- Authentication: No
+- Description: Register a new captain.
+
+Request body
+
+```json
+{
+  "fullname": { "firstname": "Jane", "lastname": "Smith" },
   "email": "jane@example.com",
   "password": "yourpassword",
   "vehicle": {
@@ -207,374 +200,522 @@ This backend provides user and captain registration, authentication, profile, an
 }
 ```
 
-- `fullname.firstname` (string, required, min 3 chars)
-- `fullname.lastname` (string, optional, min 3 chars)
-- `email` (string, required, valid email)
-- `password` (string, required, min 6 chars)
-- `vehicle.color` (string, required, min 3 chars)
-- `vehicle.plate` (string, required, min 3 chars)
-- `vehicle.capacity` (integer, required, min 1)
-- `vehicle.vehicleType` (string, required, one of: `car`, `bike`, `van`)
+Validations
 
-#### Responses
+- `body('fullname.firstname').isString().isLength({ min: 3 })`
+- `body('email').isEmail()`
+- `body('password').isString().isLength({ min: 6 })`
+- `body('vehicle.color').isString().isLength({ min: 3 })`
+- `body('vehicle.plate').isString().isLength({ min: 3 })`
+- `body('vehicle.capacity').isInt({ min: 1 })`
+- `body('vehicle.vehicleType').isIn(['car','bike','van'])`
 
-- **201 Created**
-  ```json
-  {
-    "captain": { ...captainObject },
-    "token": "JWT_TOKEN"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "errors": [ ... ]
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Captain already exists"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
-
----
-
-### 2. Login Captain
-
-**URL:** `/api/captain/login`  
-**Method:** `POST`  
-**Description:** Authenticates a captain and returns a JWT token.
-
-#### Request Body
+Success (201)
 
 ```json
 {
-  "email": "jane@example.com",
-  "password": "yourpassword"
+  "captain": {
+    /* captain object */
+  },
+  "token": "JWT_TOKEN"
 }
 ```
 
-- `email` (string, required, valid email)
-- `password` (string, required, min 6 chars)
+Errors
 
-#### Responses
+- 400: Validation errors or captain exists
+- 500: Server error
 
-- **200 OK**
-  ```json
-  {
-    "captain": { ...captainObject },
-    "jwt_token": "JWT_TOKEN"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "errors": [ ... ]
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Invalid email or password"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/captain/register \
+  -H "Content-Type: application/json" \
+  -d '{"fullname":{"firstname":"Jane","lastname":"Smith"},"email":"jane@example.com","password":"yourpassword","vehicle":{"color":"Red","plate":"ABC123","capacity":4,"vehicleType":"car"}}'
+```
 
 ---
 
-### 3. Get Captain Profile
+### POST /captain/login
 
-**URL:** `/api/captain/profile`  
-**Method:** `GET`  
-**Description:** Returns the authenticated captain's profile.  
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
+- Authentication: No
+- Description: Login and receive JWT.
 
-#### Responses
+Request body
 
-- **200 OK**
-  ```json
-  {
-    "user": { ...captainObject }
-  }
-  ```
-- **401 Unauthorized**
-  ```json
-  {
-    "message": "Authorization denied"
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Token has been revoked"
-  }
-  ```
-  or
-  ```json
-  {
-    "message": "Token is not valid"
-  }
-  ```
-- **404 Not Found**
-  ```json
-  {
-    "message": "User not found"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Server error"
-  }
-  ```
+```json
+{ "email": "jane@example.com", "password": "yourpassword" }
+```
+
+Validations
+
+- `body('email').isEmail()`
+- `body('password').isString().isLength({ min: 6 })`
+
+Success (200)
+
+```json
+{
+  "captain": {
+    /* captain object */
+  },
+  "jwt_token": "JWT_TOKEN"
+}
+```
+
+Errors
+
+- 400: Invalid credentials or validation errors
+- 500: Server error
+
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/captain/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"jane@example.com","password":"yourpassword"}'
+```
 
 ---
 
-### 4. Logout Captain
+### GET /captain/profile
 
-**URL:** `/api/captain/logout`  
-**Method:** `GET`  
-**Description:** Logs out the captain by clearing the JWT cookie and blacklisting the token.  
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
+- Authentication: Yes
+- Description: Returns authenticated captain's profile.
 
-#### Responses
+Success (200)
 
-- **200 OK**
-  ```json
-  {
-    "message": "Logged out successfully"
+```json
+{
+  "captain": {
+    /* captain object */
   }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Server error"
-  }
-  ```
+}
+```
+
+Errors
+
+- 401: Authorization denied / invalid token / revoked
+- 404: Captain not found
+- 500: Server error
+
+Example
+
+```bash
+curl -X GET http://localhost:4000/api/captain/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
 
 ---
 
-## MAPS ROUTES
+### GET /captain/logout
 
-### 1. Get Coordinates from Address
+- Authentication: Yes
+- Description: Clears JWT cookie and blacklists token.
 
-**URL:** `/api/maps/get-coordinates`
-**Method:** `GET`
-**Description:** Returns latitude and longitude for a given address.
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
+Success (200)
 
-#### Query Parameters
+```json
+{ "message": "Logged out successfully" }
+```
 
-`address` (string, required)
+Errors
 
-#### Responses
+- 500: Server error
 
-- **200 OK**
-  ```json
-  {
-    "coordinates": {
-      "lat": 12.9716,
-      "lng": 77.5946
+Example
+
+```bash
+curl -X GET http://localhost:4000/api/captain/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### GET /captain/available
+
+- Authentication: Yes
+- Description: Return captains within a radius filtered by vehicle type.
+
+Query parameters
+
+- `lat` (number, required)
+- `lng` (number, required)
+- `radius` (number, optional, km, default: 5)
+- `vehicleType` (string, optional)
+
+Validations
+
+- `query('lat').isFloat()`
+- `query('lng').isFloat()`
+- `query('radius').optional().isFloat()`
+- `query('vehicleType').optional().isIn(['car','bike','van'])`
+
+Success (200)
+
+```json
+{
+  "captains": [
+    /* array of captain objects */
+  ]
+}
+```
+
+Example
+
+```bash
+curl -X GET "http://localhost:4000/api/captain/available?lat=12.9716&lng=77.5946&radius=5&vehicleType=car" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+## MAPS
+
+### GET /maps/get-coordinates
+
+- Authentication: Yes
+- Description: Returns latitude and longitude for a given address.
+
+Query parameters
+
+- `address` (string, required)
+
+Validations
+
+- `query('address').isString().isLength({ min: 3 })`
+
+Success (200)
+
+```json
+{ "coordinates": { "lat": 12.9716, "lng": 77.5946 } }
+```
+
+Errors
+
+- 400: Missing or invalid address
+- 500: Server error
+
+Example
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/get-coordinates?address=MG%20Road%20Bangalore" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### GET /maps/get-address
+
+- Authentication: Yes
+- Description: Returns address for given latitude and longitude.
+
+Query parameters
+
+- `lat` (number, required)
+- `lng` (number, required)
+
+Validations
+
+- `query('lat').isFloat()`
+- `query('lng').isFloat()`
+
+Success (200)
+
+```json
+{ "address": "123 Main St, City, Country" }
+```
+
+Example
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/get-address?lat=12.9716&lng=77.5946" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### GET /maps/get-distance-duration
+
+- Authentication: Yes
+- Description: Returns distance (meters) and duration (seconds) between two points.
+
+Query parameters
+
+- `originLat`, `originLng`, `destLat`, `destLng` (all required)
+
+Validations
+
+- `query('originLat').isFloat()` etc.
+
+Success (200)
+
+```json
+{ "distance": 1200, "duration": 300 }
+```
+
+Example
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/get-distance-duration?originLat=12.9716&originLng=77.5946&destLat=12.9352&destLng=77.6245" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+### GET /maps/place-suggestions
+
+- Authentication: Yes
+- Description: Auto-complete place suggestions from Google Places API.
+
+Query parameters
+
+- `input` (string, required)
+
+Success (200)
+
+```json
+{
+  "suggestions": [
+    { "description": "MG Road, Bengaluru, Karnataka, India", "place_id": "..." }
+  ]
+}
+```
+
+Example
+
+```bash
+curl -X GET "http://localhost:4000/api/maps/place-suggestions?input=MG%20Road" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+---
+
+## RIDE
+
+### POST /ride/create-ride
+
+- Authentication: Yes
+- Description: Request a new ride (user-facing).
+
+Request body
+
+```json
+{ "pickup": "123 Main St, City", "vehicleType": "car" }
+```
+
+Validations
+
+- `body('pickup').isString().isLength({ min: 3 })`
+- `body('vehicleType').isString().isIn(['car','bike','van'])`
+
+Success (201)
+
+```json
+{
+  "ride": {
+    /* ride object */
+  }
+}
+```
+
+Errors
+
+- 400: Validation errors or "No captains available nearby"
+- 500: Server error or "No hospitals found nearby"
+
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/ride/create-ride \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"pickup":"123 Main St, City","vehicleType":"car"}'
+```
+
+---
+
+### POST /ride/confirm
+
+- Authentication: Yes
+- Description: Captain confirms and accepts a pending ride; OTP may be used.
+
+Request body
+
+```json
+{ "rideId": "<rideObjectId>", "captainId": "<captainObjectId>", "otp": "1234" }
+```
+
+Validations
+
+- `body('rideId').isMongoId()`
+- `body('captainId').isMongoId()`
+- `body('otp').isNumeric().isLength({ min: 4, max: 6 })`
+
+Success (200)
+
+```json
+{
+  "ride": {
+    /* ride object with status accepted */
+  }
+}
+```
+
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/ride/confirm \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"rideId":"<rideId>","captainId":"<captainId>","otp":"1234"}'
+```
+
+---
+
+### POST /ride/cancel
+
+- Authentication: Yes
+- Description: Cancel a ride (user or captain).
+
+Request body
+
+```json
+{ "rideId": "<rideObjectId>", "reason": "User changed plans" }
+```
+
+Validations
+
+- `body('rideId').isMongoId()`
+- `body('reason').optional().isString().isLength({ min: 3 })`
+
+Success (200)
+
+```json
+{
+  "message": "Ride cancelled",
+  "ride": {
+    /* ride object with status cancelled */
+  }
+}
+```
+
+Example
+
+```bash
+curl -X POST http://localhost:4000/api/ride/cancel \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{"rideId":"<rideId>","reason":"User changed plans"}'
+```
+
+---
+
+### GET /ride/status
+
+- Authentication: Yes
+- Description: Get ride status and details.
+
+Query params
+
+- `rideId` (string, required)
+
+Success (200)
+
+```json
+{
+  "ride": {
+    "_id": "...",
+    "status": "accepted",
+    "captain": {
+      /* ... */
     }
   }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "message": "Address query parameter is required"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
-
-### 2. Get Address from Coordinates
-
-**URL:** `/api/maps/get-address`
-**Method:** `GET`
-**Description:** Returns address for given latitude and longitude.
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
-
-#### Query Parameters
-
-`lat` (number, required), `lng` (number, required)
-
-#### Responses
-
-- **200 OK**
-  ```json
-  {
-    "address": "123 Main St, City, Country"
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "message": "lat and lng query parameters are required"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
-
-### 3. Get Distance and Duration Between Two Points
-
-**URL:** `/api/maps/get-distance-duration`
-**Method:** `GET`
-**Description:** Returns the distance (in meters) and duration (in seconds) between two locations.
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
-
-#### Query Parameters
-
-- `originLat` (number, required): Latitude of origin
-- `originLng` (number, required): Longitude of origin
-- `destLat` (number, required): Latitude of destination
-- `destLng` (number, required): Longitude of destination
-
-#### Responses
-
-- **200 OK**
-  ```json
-  {
-    "distance": 1200,
-    "duration": 300
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "message": "originLat, originLng, destLat, and destLng query parameters are required"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
-
-### 4. Get Place Suggestions (Auto-complete)
-
-**URL:** `/api/maps/place-suggestions`
-**Method:** `GET`
-**Description:** Returns auto-suggested places for a given input string using Google Places API.
-**Authentication:** Requires JWT token in cookie or `Authorization` header.
-
-#### Query Parameters
-
-`input` (string, required)
-
-#### Responses
-
-- **200 OK**
-  ```json
-  {
-    "suggestions": [
-      {
-        "description": "MG Road, Bengaluru, Karnataka, India",
-        "place_id": "ChIJLfySpTOuEmsRsc_JfJtljdc"
-      }
-      // ...more predictions
-    ]
-  }
-  ```
-- **400 Bad Request**
-  ```json
-  {
-    "message": "input query parameter is required"
-  }
-  ```
-- **500 Internal Server Error**
-  ```json
-  {
-    "message": "Error message"
-  }
-  ```
-
----
-
-## HOSPITAL SERVICE
-
-### Find Nearest Hospital
-
-**Description:** Finds the nearest hospital to a given pickup location using the Google Maps Distance Matrix API.
-
-**Usage:**
-Call `findNearestHospital(pickupCoords)` where `pickupCoords` is an object `{ lat, lng }`.
-
-**Returns:**
-
-```json
-{
-  "_id": "...",
-  "name": "City Hospital",
-  "location": { "lat": ..., "lng": ... },
-  "capacity": 50,
-  "distance": 1200, // in meters
-  "duration": 300   // in seconds
 }
+```
+
+Example
+
+```bash
+curl -X GET "http://localhost:4000/api/ride/status?rideId=<rideId>" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
 ---
 
-## Notes
+## MODELS
 
-- JWT token is sent as an HTTP-only cookie for authentication.
-- All endpoints expect JSON data in the request body (except GET requests).
-- Validation errors are returned as an array under the `errors` key.
-- Passwords are hashed before saving.
-- Registration checks for existing email.
-- Logout blacklists the token for 24 hours.
+### User
+
+- `fullname`: { `firstname`: String, `lastname`: String }
+- `email`: String (required, unique)
+- `password`: String (required, hashed, select: false)
+- `socketId`: String (optional)
+
+### Captain
+
+- `fullname`: { `firstname`, `lastname` }
+- `email`: String (required, unique, lowercase)
+- `password`: String (required, hashed, select: false)
+- `socketId`: String (optional)
+- `status`: String (enum: ['active','inactive'], default: 'inactive')
+- `vehicle`: { `color`, `plate`, `capacity`, `vehicleType` }
+- `location`: { `lat`: Number, `lng`: Number }
+- `isAvailable`: Boolean (default: true)
+
+Notes: prefer GeoJSON `Point` for production geospatial queries; if using `{lat,lng}` add a 2dsphere index wrapper or adapt queries to $geoWithin with $centerSphere.
+
+### Hospital
+
+- `name`: String (required)
+- `location`: { `lat`: Number, `lng`: Number }
+- `capacity`: Number (optional, default: 0)
+- `isAccepting`: Boolean (optional, default: true)
+
+### Ride
+
+- `user`: ObjectId (ref: 'user', required)
+- `captain`: ObjectId (ref: 'captain')
+- `pickup`: String (required)
+- `pickupCoords`: { `lat`: Number, `lng`: Number }
+- `destination`: ObjectId (ref: 'hospital', required)
+- `fare`: Number
+- `distance`: Number (meters)
+- `duration`: Number (seconds)
+- `status`: String (enum: ['pending','accepted','ongoing','completed','cancelled'], default: 'pending')
+- `otp`: String (select: false)
+- `otpExpires`: Date
+- `payment`: { paymentID, orderId, signature }
+- timestamps
 
 ---
 
-## Environment Variables
+## NOTES & RECOMMENDATIONS
 
-- `JWT_SECRET`: Secret key for JWT signing.
+- Use `express-validator` consistently on routes for all inputs.
+- Keep sensitive fields (`password`, `otp`) with `select: false` in Mongoose schemas.
+- Prefer GeoJSON `Point` for production geospatial indexing; otherwise ensure queries align with the stored format.
+- Keep `OTP` expiry short (e.g., 5 minutes) and store `otpExpires`.
 
 ---
 
-## Models
+If you'd like, I can implement the missing schema fields (`pickupCoords`, `otp`, `otpExpires`, `isAvailable`) and create the route handlers for `/ride/confirm`, `/ride/cancel`, and `/captain/available`.
 
-- **User**
-  - `fullname`: `{ firstname, lastname }`
-  - `email`
-  - `password` (hashed)
-  - `socketId` (optional)
-- **Captain**
-  - `fullname`: `{ firstname, lastname }`
-  - `email` (string, required, unique, lowercase)
-  - `password` (string, required, hashed, select: false)
-  - `socketId` (string, optional)
-  - `status`: `active` or `inactive` (default: inactive)
-  - `vehicle`: {
-    - `color` (string, required, min 3 chars)
-    - `plate` (string, required, min 3 chars)
-    - `capacity` (number, required, min 1)
-    - `vehicleType` (string, required, one of: `car`, `bike`, `van`)
-      }
-  - `location`: {
-    - `ltd` (number)
-    - `lng` (number)
-      }
+- `fullname`: `{ firstname, lastname }`
+- `email` (string, required, unique, lowercase)
+- `password` (string, required, hashed, select: false)
+- `socketId` (string, optional)
+- `status`: `active` or `inactive` (default: inactive)
+- `vehicle`: {
+  - `color` (string, required, min 3 chars)
+  - `plate` (string, required, min 3 chars)
+  - `capacity` (number, required, min 1)
+  - `vehicleType` (string, required, one of: `car`, `bike`, `van`)
+    }
+- `location`: {
+  - `ltd` (number)
+  - `lng` (number)
+    }
 - **BlacklistToken**
   - `token`: JWT string
   - `createdAt`: Date (expires after 24 hours)

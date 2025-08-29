@@ -26,6 +26,7 @@ module.exports.createRide = async ({
     destination: nearestHospital._id,
     fare,
     distance,
+    otp: generateOTP(6),
     duration,
   });
   return ride;

@@ -1,11 +1,13 @@
 import { useEffect, useState, createContext } from "react";
 import axios from "axios";
+import { useSocket } from "./SocketContext"; // Import useSocket
 
 export const userDataContext = createContext();
 
 const UserContext = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { sendMessage, socket } = useSocket(); // Get socket
 
   useEffect(() => {
     axios
@@ -24,6 +26,13 @@ const UserContext = ({ children }) => {
         setLoading(false);
       });
   }, []);
+
+  // Emit join when user and socket are available
+  useEffect(() => {
+    if (user && socket) {
+      sendMessage("join", { userId: user._id, userType: "user" });
+    }
+  }, [user, socket, sendMessage]);
 
   return (
     <userDataContext.Provider value={{ user, setUser, loading }}>
