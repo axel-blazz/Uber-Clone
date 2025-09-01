@@ -31,6 +31,8 @@ const UserContext = ({ children }) => {
   useEffect(() => {
     if (user && socket) {
       sendMessage("join", { userId: user._id, userType: "user" });
+      console.log("User joined socket room:", user._id);
+      
     }
   }, [user, socket, sendMessage]);
 

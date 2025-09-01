@@ -1,8 +1,7 @@
 const { validationResult } = require("express-validator");
 const rideService = require("../services/ride.service");
 const mapsService = require("../services/maps.service");
-const hospitalService = require("../services/hospital.service");
-const Ride = require("../models/ride.model");
+const { sendMessageToSocketId } = require("../socket");
 
 module.exports.createRide = async (req, res, next) => {
   try {
@@ -12,26 +11,12 @@ module.exports.createRide = async (req, res, next) => {
     }
 
     const { pickup, vehicleType } = req.body;
-    const userId = req.user.id;
-
-    // ✅ Get pickup coordinates
-    const pickupCoords = await mapsService.getAddressCoordinates(pickup);
-    if (!pickupCoords) {
-      return res.status(400).json({ message: "Invalid pickup address" });
-    }
-
-    // ✅ Find nearest hospital
-    const nearestHospital = await hospitalService.findNearestHospital(pickupCoords);
-    if (!nearestHospital) {
-      return res.status(500).json({ message: "No hospitals found nearby" });
-    }
+    const userId = req.user._id;
 
     // ✅ Create ride (pending by default)
-    let ride = await rideService.createRide({
+    let { ride, pickupCoords } = await rideService.createRide({
       userId,
       pickup,
-      pickupCoords,
-      nearestHospital,
       vehicleType,
     });
 
@@ -45,14 +30,30 @@ module.exports.createRide = async (req, res, next) => {
       return res.status(400).json({ message: "No captains available nearby" });
     }
 
-    // ✅ Generate OTP
-    const otp = "";
 
     // ✅ Populate references
     ride = await ride
       .populate("user", "-password")
-      .populate("captain", "-password")
-      .populate("destination");
+      .populate("destination")
+      .select("-otp");
+
+    // Notify all available
+    captainsAvailable.map((captain) => {
+      // Notify each captain about the new ride request
+      sendMessageToSocketId(captain.socketId, {
+        event: "new-ride-request",
+        data: { ride },
+      });
+    });
+
+    if(captainsAvailable.deviceToken){
+      // Send push notification to all available captains
+      pushNotificationService.sendPushNotification(captainsAvailable.deviceToken, {
+        title: "New Ride Request",
+        body: `Pickup at ${pickup}`,
+        data: { rideId: ride._id.toString() },
+      });
+    }
 
     res.status(201).json({ ride });
   } catch (error) {

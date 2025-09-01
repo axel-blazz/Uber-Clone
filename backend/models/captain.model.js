@@ -30,10 +30,15 @@ const captainSchema = new mongoose.Schema({
     type: String,
   },
 
+  deviceToken: {
+    type: String,
+    default: null,
+  },
+
   status: {
     type: String,
     enum: ["active", "inactive"],
-    default: "inactive",
+    default: "active"
   },
 
   vehicle: {

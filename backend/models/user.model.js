@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
     required: true,
     select: false,
   },
+  deviceToken: {
+    type: String,
+    default: null,
+  },
   socketId: {
     type: String,
   },

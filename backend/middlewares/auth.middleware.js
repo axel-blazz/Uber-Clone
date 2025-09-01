@@ -80,3 +80,15 @@ module.exports.authCaptain = async (req, res, next) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+module.exports.chooseAuth = (req, res, next) => {
+  const { role } = req.body;
+
+  if (role === "user") {
+    return this.authUser(req, res, next);
+  } else if (role === "captain") {
+    return this.authCaptain(req, res, next);
+  } else {
+    return res.status(400).json({ error: "Invalid role" });
+  }
+};

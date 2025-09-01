@@ -29,6 +29,9 @@ const CaptainContext = ({ children }) => {
   useEffect(() => {
     if (captain && socket) {
       sendMessage("join", { userId: captain._id, userType: "captain" });
+      console.log("Captain joined socket room:", captain._id);
+      
+      
     }
   }, [captain, socket, sendMessage]);
 

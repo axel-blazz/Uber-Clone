@@ -1,17 +1,29 @@
 const rideModel = require("../models/ride.model");
 const mapsService = require("./maps.service");
+const hospitalService = require("./hospital.service");
 const crypto = require("crypto");
 
 module.exports.createRide = async ({
   userId,
   pickup,
-  pickupCoords,
-  nearestHospital,
   vehicleType
 }) => {
-  if (!userId || !pickup || !nearestHospital || !vehicleType) {
+  if (!userId || !pickup || !vehicleType) {
     throw new Error("Missing required fields to create a ride");
   }
+
+// ✅ Get pickup coordinates
+  const pickupCoords = await mapsService.getAddressCoordinates(pickup);
+  if (!pickupCoords) {
+    return res.status(400).json({ message: "Invalid pickup address" });
+  }
+
+  // ✅ Find nearest hospital
+  const nearestHospital = await hospitalService.findNearestHospital(pickupCoords);
+  if (!nearestHospital) {
+    return res.status(500).json({ message: "No hospitals found nearby" });
+  }
+
   // Calculate fare, distance, duration
   const { fare, distance, duration } = await this.calculateFare(
     pickupCoords,
@@ -29,7 +41,7 @@ module.exports.createRide = async ({
     otp: generateOTP(6),
     duration,
   });
-  return ride;
+  return {ride, pickupCoords};
 };
 
 module.exports.calculateFare = async (
@@ -55,17 +67,19 @@ module.exports.confirmRide = async (rideId, captain) => {
     throw new Error("Missing rideId or captain to confirm ride");
   }
 
-  await rideModel.findOneAndUpdate(
-    { _id: rideId, status: "pending" },
-    { status: "accepted", captain: captain._id },
-  );
-
   const ride = await rideModel
-    .findById(rideId)
+    .findOneAndUpdate(
+      { _id: rideId, status: "pending" }, // only if still pending
+      { status: "accepted", captain: captain._id },
+      { new: true } // return updated doc
+    )
     .populate("user", "-password")
     .populate("captain", "-password")
     .populate("destination")
     .select("+otp");
+  if (!ride) {
+    throw new Error("Ride not found or already accepted/cancelled");
+  }
   return ride;
 };
 
