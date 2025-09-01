@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const rideService = require("../services/ride.service");
 const mapsService = require("../services/maps.service");
+const pushNotificationService = require("../services/pushNotification.service");
 const { sendMessageToSocketId } = require("../socket");
 
 module.exports.createRide = async (req, res, next) => {
