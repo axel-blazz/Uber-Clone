@@ -1,18 +1,23 @@
 const admin = require("../config/firebaseAdmin");
 
-async function sendPushNotification(token, payload) {
-  if (!token) return;
+async function sendPushNotification(token, title, body, data = {}) {
   try {
-    await admin.messaging().send({
-      token,
-      notification: {
-        title: payload.title,
-        body: payload.body,
+    const message = {
+      data: {
+        title,
+        body,
+        ...data, // e.g. rideId
       },
-      data: payload.data || {},
-    });
-  } catch (error) {
-    console.error("Error sending push notification:", error);
+      token,
+    };
+
+    console.log("📤 Sending push payload:", JSON.stringify(message, null, 2));
+    const response = await admin.messaging().send(message);
+    console.log("✅ Notification sent:", response);
+    return response;
+  } catch (err) {
+    console.error("❌ Error sending notification:", err);
+    throw err;
   }
 }
 

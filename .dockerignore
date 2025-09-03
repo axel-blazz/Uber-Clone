@@ -1,0 +1,36 @@
+# Ignore node_modules (we install inside container)
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+# Logs
+logs
+*.log
+
+# Env files (don’t leak secrets into Docker image)
+.env
+.env.*  
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+*.swp
+
+# Test coverage / build artifacts
+coverage
+dist
+build
+.cache
+.next
+out
+
+# Docker stuff
+Dockerfile
+.dockerignore
+
+# Git
+.git
+.gitignore

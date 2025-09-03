@@ -10,10 +10,10 @@ const SocketProvider = ({ children }) => {
   const [socketInstance, setSocketInstance] = useState(null);
 
   useEffect(() => {
-    const url = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+    const url = import.meta.env.VITE_BASE_URL || "http://localhost:4000";
     socketRef.current = io(url, {
       withCredentials: true,
-      transports: ["websocket", "polling"],
+      transports: ["websocket"],
     });
 
     socketRef.current.on("connect", () => {

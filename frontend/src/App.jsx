@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import UserProtectedWrapper from "./pages/UserProtectedWrapper";
 import CaptainProtectedWrapper from "./pages/CaptainProtectedWrapper";
 import CaptainHome from "./pages/CaptainHome";
+import RideContext from "./context/RideContext";
 
 const App = () => {
   return (
@@ -26,7 +27,9 @@ const App = () => {
           path="/home"
           element={
             <UserProtectedWrapper>
-              <Home />
+              <RideContext role="user">
+                <Home />
+              </RideContext>
             </UserProtectedWrapper>
           }
         />
@@ -35,7 +38,9 @@ const App = () => {
           path="/captain/home"
           element={
             <CaptainProtectedWrapper>
-              <CaptainHome />
+              <RideContext role="captain">
+                <CaptainHome />
+              </RideContext>
             </CaptainProtectedWrapper>
           }
         />

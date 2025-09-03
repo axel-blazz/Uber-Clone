@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./backend
+    container_name: uber-backend
+    ports:
+      - "4000:4000"
+      - "9229:9229"  # Debugging port"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./frontend
+    container_name: uber-frontend
+    ports:
+      - "5173:5173"   # match Vite dev port
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:6
+    container_name: uber-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

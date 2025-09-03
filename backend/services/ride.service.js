@@ -41,7 +41,7 @@ module.exports.createRide = async ({
     otp: generateOTP(6),
     duration,
   });
-  return {ride, pickupCoords};
+  return { rideId: ride._id, pickupCoords };
 };
 
 module.exports.calculateFare = async (

@@ -43,24 +43,19 @@ const useFCMToken = (role) => {
       }
     };
 
-    // 🔹 Run once on mount
     registerToken();
 
-    // 🔹 Re-run periodically in case token rotates (e.g. every 24h)
     const interval = setInterval(registerToken, 24 * 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [role]);
 
-  // 🔹 Foreground message listener
+  // ✅ Foreground message listener (use data payload)
   useEffect(() => {
     const unsubscribe = onMessage(messaging, (payload) => {
-      console.log("Foreground message received:", payload);
+      console.log("📥 Foreground message received:", payload);
 
-      // You can trigger UI here (toast, snackbar, etc.)
-      if (payload?.notification) {
-        alert(
-          `${payload.notification.title}\n${payload.notification.body}`
-        );
+      if (payload?.data) {
+        alert(`${payload.data.title}\n${payload.data.body}`);
       }
     });
 
