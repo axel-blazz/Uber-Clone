@@ -34,6 +34,7 @@ module.exports.authUser = async (req, res, next) => {
     }
 
     req.user = user; // attach user to request
+    req.role = "user"; // attach role to request
     next(); // move to the next middleware or route handler
   } catch (err) {
     console.error(err);
@@ -74,6 +75,7 @@ module.exports.authCaptain = async (req, res, next) => {
     }
 
     req.user = captain; // attach user to request
+    req.role = "captain"; // attach role to request
     next(); // move to the next middleware or route handler
   } catch (err) {
     console.error(err);

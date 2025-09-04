@@ -88,7 +88,7 @@ captainSchema.methods.comparePassword = async function (password) {
 };
 
 captainSchema.methods.generateJWT = function () {
-  return jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+  return jwt.sign({ userId: this._id, role: "captain" }, process.env.JWT_SECRET, {
     expiresIn: "1h",
   });
 };
